@@ -74,6 +74,45 @@ const run = async () => {
       console.log(result);
       res.send(result);
     });
+
+    app.post('/comment/:id', async (req, res) => {
+      const bookId = req.params.id;
+      const comment = req.body.comment;
+
+      console.log(bookId);
+      console.log(comment);
+
+      const result = await bookCollection.updateOne(
+        { _id: ObjectId(bookId) },
+        { $push: { comments: comment } }
+      );
+
+      console.log(result);
+
+      if (result.modifiedCount !== 1) {
+        console.error('book not found or comment not added');
+        res.json({ error: 'book not found or comment not added' });
+        return;
+      }
+
+      console.log('Comment added successfully');
+      res.json({ message: 'Comment added successfully' });
+    });
+
+    app.get('/comment/:id', async (req, res) => {
+      const bookId = req.params.id;
+
+      const result = await bookCollection.findOne(
+        { _id: ObjectId(bookId) },
+        { projection: { _id: 0, comments: 1 } }
+      );
+
+      if (result) {
+        res.json(result);
+      } else {
+        res.status(404).json({ error: 'book not found' });
+      }
+    });
   } finally {
   }
 };
